@@ -27,4 +27,9 @@ public class ClientEntity extends MainTable {
     @DynamoDBAttribute
     @DynamoDBIndexHashKey(globalSecondaryIndexName = "GSIEmail")
     private String email;
+
+    public  void iniciarCampos(){
+        this.inicializarBase("Client");
+
+    }
 }

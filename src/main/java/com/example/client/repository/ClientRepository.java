@@ -2,6 +2,7 @@ package com.example.client.repository;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.example.client.model.ClientEntity;
 import org.springframework.stereotype.Repository;
@@ -21,40 +22,48 @@ public class ClientRepository {
 
 
     public ClientEntity save(ClientEntity client) {
+        client.iniciarCampos();
         dynamoDBMapper.save(client);
         return client;
     }
 
 
     public ClientEntity findById(String id) {
-        ClientEntity clientKey = new ClientEntity();
-        clientKey.setPK(id);
-
-        DynamoDBQueryExpression<ClientEntity> query = new DynamoDBQueryExpression<ClientEntity>()
-                .withHashKeyValues(clientKey)
-                .withLimit(1);
-
-        List<ClientEntity> results = dynamoDBMapper.query(ClientEntity.class, query);
-        return results.isEmpty() ? null : results.get(0);
+        String pk = "#Client" + id;
+        return dynamoDBMapper.load(ClientEntity.class, pk, id);
     }
 
 
-    public List<ClientEntity> findByName(String name) {
-        Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(":name", new AttributeValue().withS(name.toLowerCase()));
 
-        // Usamos HashMap en lugar de Map.of para hacerlo compatible con Java 8
+    /* public List<ClientEntity> findByName(String name) {
+        ClientEntity clientKey = new ClientEntity();
+        clientKey.setName(name);
+
+        DynamoDBQueryExpression<ClientEntity> query = new DynamoDBQueryExpression<ClientEntity>()
+                .withIndexName("GSINombre")
+                .withHashKeyValues(clientKey)
+                .withConsistentRead(false);
+
+        return dynamoDBMapper.query(ClientEntity.class, query);
+    } */
+
+    public List<ClientEntity> findByName(String fragment) {
         Map<String, String> expressionAttributeNames = new HashMap<>();
         expressionAttributeNames.put("#name", "name");
 
-        DynamoDBQueryExpression<ClientEntity> query = new DynamoDBQueryExpression<ClientEntity>()
-                .withIndexName("GSINombre")  // Usamos el GSI "GSINombre"
-                .withKeyConditionExpression("#name = :name")
-                .withExpressionAttributeValues(expressionValues)
-                .withExpressionAttributeNames(expressionAttributeNames);
+        Map<String, AttributeValue> expressionAttributeValues = new HashMap<>();
+        expressionAttributeValues.put(":name", new AttributeValue().withS(fragment.toLowerCase()));
 
-        return dynamoDBMapper.query(ClientEntity.class, query);
+        DynamoDBScanExpression scanExpression = new DynamoDBScanExpression()
+                .withFilterExpression("contains(#name, :name)")
+                .withExpressionAttributeNames(expressionAttributeNames)
+                .withExpressionAttributeValues(expressionAttributeValues);
+
+        return dynamoDBMapper.scan(ClientEntity.class, scanExpression);
     }
+
+
+
 
 
     public ClientEntity findByEmail(String email) {
