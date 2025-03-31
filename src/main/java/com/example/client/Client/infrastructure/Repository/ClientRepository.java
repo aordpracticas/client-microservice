@@ -1,10 +1,11 @@
-package com.example.client.repository;
+package com.example.client.Client.infrastructure.Repository;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.example.client.model.ClientEntity;
+import com.example.client.Client.domain.ClientEntity;
+import com.example.client.Client.infrastructure.controller.DTO.ClientInputDto;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
@@ -21,11 +22,15 @@ public class ClientRepository {
     }
 
 
-    public ClientEntity save(ClientEntity client) {
-        client.iniciarCampos();
+    public ClientEntity save(ClientEntity client, boolean isNew) {
+        if (isNew) {
+            client.iniciarCampos();
+        }
         dynamoDBMapper.save(client);
         return client;
     }
+
+
 
 
     public ClientEntity findById(String id) {
@@ -47,6 +52,7 @@ public class ClientRepository {
         return dynamoDBMapper.query(ClientEntity.class, query);
     } */
 
+    /* Es con SCAN NO VALE
     public List<ClientEntity> findByName(String fragment) {
         Map<String, String> expressionAttributeNames = new HashMap<>();
         expressionAttributeNames.put("#name", "name");
@@ -61,7 +67,7 @@ public class ClientRepository {
 
         return dynamoDBMapper.scan(ClientEntity.class, scanExpression);
     }
-
+*/
 
 
 
@@ -87,4 +93,7 @@ public class ClientRepository {
         }
         return results.get(0);
     }
+
+
+
 }

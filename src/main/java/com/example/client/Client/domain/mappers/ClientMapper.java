@@ -1,8 +1,8 @@
-package com.example.client.mappers;
+package com.example.client.Client.domain.mappers;
 
-import com.example.client.dto.ClientInputDto;
-import com.example.client.dto.ClientOutputDto;
-import com.example.client.model.ClientEntity;
+import com.example.client.Client.infrastructure.controller.DTO.ClientInputDto;
+import com.example.client.Client.infrastructure.controller.DTO.ClientOutputDto;
+import com.example.client.Client.domain.ClientEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;

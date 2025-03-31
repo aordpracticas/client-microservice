@@ -1,4 +1,4 @@
-package com.example.client.model;
+package com.example.client.Client.domain;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIndexHashKey;

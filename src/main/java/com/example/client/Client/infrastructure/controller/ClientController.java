@@ -1,9 +1,11 @@
-package com.example.client.controller;
+package com.example.client.Client.infrastructure.controller;
 
-import com.example.client.dto.ClientInputDto;
-import com.example.client.dto.ClientOutputDto;
-import com.example.client.dto.MerchantDto;
-import com.example.client.service.ClientService;
+import com.example.client.Client.aplication.port.ClientCreate;
+import com.example.client.Client.aplication.port.ClientGet;
+import com.example.client.Client.aplication.port.ClientUpdate;
+import com.example.client.Client.infrastructure.controller.DTO.ClientInputDto;
+import com.example.client.Client.infrastructure.controller.DTO.ClientOutputDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,13 +16,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/client")
+@RequiredArgsConstructor
 public class ClientController {
 
-    private final ClientService clientService;
+    private  final ClientCreate clientCreate;
+    private  final ClientUpdate clientUpdate;
+    private  final ClientGet clientGet;
 
-    public ClientController(ClientService clientService) {
-        this.clientService = clientService;
-    }
 
     @PostMapping("/create")
     public ResponseEntity<?> createClient(@RequestBody @Valid ClientInputDto clientDto, BindingResult result) {
@@ -31,13 +33,13 @@ public class ClientController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
         }
 
-        ClientOutputDto newClient = clientService.createClient(clientDto);
+        ClientOutputDto newClient = clientCreate.createClient(clientDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(newClient);
     }
 
     @GetMapping("/findById")
     public ResponseEntity<?> findClientById(@RequestParam String id, @RequestParam(required = false) Boolean simpleOutput) {
-        ClientOutputDto client = clientService.findClientById(id, simpleOutput != null && simpleOutput);
+        ClientOutputDto client = clientGet.findClientById(id, simpleOutput != null && simpleOutput);
 
         if (client == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No hemos encontrado el cliente con ese ID");
@@ -48,16 +50,31 @@ public class ClientController {
 
     @GetMapping("/findByName")
     public ResponseEntity<List<ClientOutputDto>> findClientByName(@RequestParam String name) {
-        return ResponseEntity.ok(clientService.findClientByName(name));
+        return ResponseEntity.ok(clientGet.findClientByName(name));
     }
 
     @GetMapping("/findByEmail")
     public ResponseEntity<ClientOutputDto> findClientByEmail(@RequestParam String email) {
-        return ResponseEntity.ok(clientService.findClientByEmail(email));
+        return ResponseEntity.ok(clientGet.findClientByEmail(email));
+    }
+    @PutMapping("/update")
+
+    public ResponseEntity<?> updateClient(@RequestParam String id, @RequestBody @Valid ClientInputDto clientDto, BindingResult result) {
+        if (result.hasErrors()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error en los datos de entrada");
+        }
+
+        ClientOutputDto updatedClient = clientUpdate.updateClient(id, clientDto);
+
+        if (updatedClient == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cliente no encontrado");
+        }
+
+        return ResponseEntity.ok(updatedClient);
     }
 
-    @GetMapping("/merchants/{clientId}")
-    public ResponseEntity<List<MerchantDto>> findMerchantsOfClient(@PathVariable String clientId) {
-        return ResponseEntity.ok(clientService.findMerchantsOfClient(clientId));
-    }
+
+
+
+
 }

@@ -1,32 +1,24 @@
-package com.example.client.service;
+package com.example.client.Client.aplication;
 
-import com.example.client.dto.ClientInputDto;
-import com.example.client.dto.ClientOutputDto;
-import com.example.client.dto.MerchantDto;
-import com.example.client.mappers.ClientMapper;
-import com.example.client.model.ClientEntity;
-import com.example.client.repository.ClientRepository;
+
+import com.example.client.Client.aplication.port.ClientGet;
+import com.example.client.Client.domain.ClientEntity;
+import com.example.client.Client.domain.mappers.ClientMapper;
+import com.example.client.Client.infrastructure.Repository.ClientRepository;
+import com.example.client.Client.infrastructure.controller.DTO.ClientOutputDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class ClientServiceImpl implements ClientService {
-
+@RequiredArgsConstructor
+public class ClientGetImpl implements ClientGet {
     private final ClientRepository clientRepository;
     private final ClientMapper clientMapper;
 
-    public ClientServiceImpl(ClientRepository clientRepository, ClientMapper clientMapper) {
-        this.clientRepository = clientRepository;
-        this.clientMapper = clientMapper;
-    }
 
-    @Override
-    public ClientOutputDto createClient(ClientInputDto clientDto) {
-        ClientEntity entity = clientMapper.toEntity(clientDto);
-        return clientMapper.toDto(clientRepository.save(entity));
-    }
 
     @Override
     public ClientOutputDto findClientById(String id, boolean simpleOutput) {
@@ -52,10 +44,5 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public ClientOutputDto findClientByEmail(String email) {
         return clientMapper.toDto(clientRepository.findByEmail(email));
-    }
-
-    @Override
-    public List<MerchantDto> findMerchantsOfClient(String clientId) {
-        return null;
     }
 }
