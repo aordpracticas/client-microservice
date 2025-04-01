@@ -39,8 +39,8 @@ public class ClientRepository {
     }
 
 
-
-    /* public List<ClientEntity> findByName(String name) {
+    /*
+     public List<ClientEntity> findByName(String name) {
         ClientEntity clientKey = new ClientEntity();
         clientKey.setName(name);
 
@@ -50,7 +50,8 @@ public class ClientRepository {
                 .withConsistentRead(false);
 
         return dynamoDBMapper.query(ClientEntity.class, query);
-    } */
+    }
+    */
 
     /* Es con SCAN NO VALE
     public List<ClientEntity> findByName(String fragment) {
@@ -68,6 +69,8 @@ public class ClientRepository {
         return dynamoDBMapper.scan(ClientEntity.class, scanExpression);
     }
 */
+
+
 
 
 
@@ -93,6 +96,29 @@ public class ClientRepository {
         }
         return results.get(0);
     }
+
+
+    public List<ClientEntity> findByName(String name) {
+        Map<String, AttributeValue> expressionValues = new HashMap<>();
+        expressionValues.put(":gIndex2Pk", new AttributeValue().withS("Client")); // Valor hash del GSI
+        expressionValues.put(":name", new AttributeValue().withS(name.toLowerCase())); // Valor del filtro
+
+        Map<String, String> expressionNames = new HashMap<>();
+        expressionNames.put("#gIndex2Pk", "gIndex2Pk");
+        expressionNames.put("#normalizedName", "normalizedName");
+
+        DynamoDBQueryExpression<ClientEntity> query = new DynamoDBQueryExpression<ClientEntity>()
+                .withIndexName("GSIgIndex2Pk")
+                .withKeyConditionExpression("#gIndex2Pk = :gIndex2Pk")
+                .withFilterExpression("contains(#normalizedName, :name)")
+                .withExpressionAttributeNames(expressionNames)
+                .withExpressionAttributeValues(expressionValues)
+                .withConsistentRead(false);
+
+        return dynamoDBMapper.query(ClientEntity.class, query);
+    }
+
+
 
 
 

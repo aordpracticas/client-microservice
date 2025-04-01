@@ -1,8 +1,10 @@
 package com.example.client.Client.infrastructure.controller;
 
+import com.example.client.Client.aplication.ClientModel;
 import com.example.client.Client.aplication.port.ClientCreate;
 import com.example.client.Client.aplication.port.ClientGet;
 import com.example.client.Client.aplication.port.ClientUpdate;
+import com.example.client.Client.domain.mappers.ClientDtoMapper;
 import com.example.client.Client.infrastructure.controller.DTO.ClientInputDto;
 import com.example.client.Client.infrastructure.controller.DTO.ClientOutputDto;
 import lombok.RequiredArgsConstructor;
@@ -13,16 +15,17 @@ import org.springframework.validation.BindingResult;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/client")
 @RequiredArgsConstructor
 public class ClientController {
 
-    private  final ClientCreate clientCreate;
-    private  final ClientUpdate clientUpdate;
-    private  final ClientGet clientGet;
-
+    private final ClientCreate clientCreate;
+    private final ClientUpdate clientUpdate;
+    private final ClientGet clientGet;
+    private final ClientDtoMapper clientDtoMapper;
 
     @PostMapping("/create")
     public ResponseEntity<?> createClient(@RequestBody @Valid ClientInputDto clientDto, BindingResult result) {
@@ -33,48 +36,57 @@ public class ClientController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
         }
 
-        ClientOutputDto newClient = clientCreate.createClient(clientDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newClient);
+        ClientModel model =  clientDtoMapper.toModel(clientDto);
+
+        ClientOutputDto dto = clientDtoMapper.toOutputDto(clientCreate.createClient(model));
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
     @GetMapping("/findById")
     public ResponseEntity<?> findClientById(@RequestParam String id, @RequestParam(required = false) Boolean simpleOutput) {
-        ClientOutputDto client = clientGet.findClientById(id, simpleOutput != null && simpleOutput);
-
-        if (client == null) {
+        ClientModel model = clientGet.findClientById(id, simpleOutput != null && simpleOutput);
+        if (model == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No hemos encontrado el cliente con ese ID");
         }
 
-        return ResponseEntity.ok(client);
+        ClientOutputDto dto = clientDtoMapper.toOutputDto(model);
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/findByName")
     public ResponseEntity<List<ClientOutputDto>> findClientByName(@RequestParam String name) {
-        return ResponseEntity.ok(clientGet.findClientByName(name));
+        List<ClientModel> models = clientGet.findClientByName(name);
+        List<ClientOutputDto> dtos = models.stream().map(clientDtoMapper::toOutputDto).collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/findByEmail")
-    public ResponseEntity<ClientOutputDto> findClientByEmail(@RequestParam String email) {
-        return ResponseEntity.ok(clientGet.findClientByEmail(email));
+    public ResponseEntity<?> findClientByEmail(@RequestParam String email) {
+        ClientModel model = clientGet.findClientByEmail(email);
+        if (model == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No se ha encontrado cliente con ese email.");
+        }
+        return ResponseEntity.ok(clientDtoMapper.toOutputDto(model));
     }
-    @PutMapping("/update")
 
+    @PutMapping("/update")
     public ResponseEntity<?> updateClient(@RequestParam String id, @RequestBody @Valid ClientInputDto clientDto, BindingResult result) {
         if (result.hasErrors()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error en los datos de entrada");
         }
 
-        ClientOutputDto updatedClient = clientUpdate.updateClient(id, clientDto);
 
-        if (updatedClient == null) {
+        ClientModel model = clientDtoMapper.toModel(clientDto);
+
+
+        ClientModel updatedModel = clientUpdate.updateClient(id, model);
+        if (updatedModel == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cliente no encontrado");
         }
 
-        return ResponseEntity.ok(updatedClient);
+
+        ClientOutputDto dto = clientDtoMapper.toOutputDto(updatedModel);
+        return ResponseEntity.ok(dto);
     }
-
-
-
-
 
 }
