@@ -6,6 +6,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.example.client.Client.domain.ClientEntity;
 import com.example.client.Client.infrastructure.controller.DTO.ClientInputDto;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
@@ -13,13 +14,12 @@ import java.util.List;
 import java.util.Map;
 
 @Repository
+@AllArgsConstructor
 public class ClientRepository {
 
     private final DynamoDBMapper dynamoDBMapper;
 
-    public ClientRepository(DynamoDBMapper dynamoDBMapper) {
-        this.dynamoDBMapper = dynamoDBMapper;
-    }
+
 
 
     public ClientEntity save(ClientEntity client, boolean isNew) {
@@ -37,41 +37,6 @@ public class ClientRepository {
         String pk = "#Client" + id;
         return dynamoDBMapper.load(ClientEntity.class, pk, id);
     }
-
-
-    /*
-     public List<ClientEntity> findByName(String name) {
-        ClientEntity clientKey = new ClientEntity();
-        clientKey.setName(name);
-
-        DynamoDBQueryExpression<ClientEntity> query = new DynamoDBQueryExpression<ClientEntity>()
-                .withIndexName("GSINombre")
-                .withHashKeyValues(clientKey)
-                .withConsistentRead(false);
-
-        return dynamoDBMapper.query(ClientEntity.class, query);
-    }
-    */
-
-    /* Es con SCAN NO VALE
-    public List<ClientEntity> findByName(String fragment) {
-        Map<String, String> expressionAttributeNames = new HashMap<>();
-        expressionAttributeNames.put("#name", "name");
-
-        Map<String, AttributeValue> expressionAttributeValues = new HashMap<>();
-        expressionAttributeValues.put(":name", new AttributeValue().withS(fragment.toLowerCase()));
-
-        DynamoDBScanExpression scanExpression = new DynamoDBScanExpression()
-                .withFilterExpression("contains(#name, :name)")
-                .withExpressionAttributeNames(expressionAttributeNames)
-                .withExpressionAttributeValues(expressionAttributeValues);
-
-        return dynamoDBMapper.scan(ClientEntity.class, scanExpression);
-    }
-*/
-
-
-
 
 
 
@@ -116,6 +81,16 @@ public class ClientRepository {
                 .withConsistentRead(false);
 
         return dynamoDBMapper.query(ClientEntity.class, query);
+    }
+
+    public boolean deleteById(String id) {
+        String pk = "#Client" + id;
+        ClientEntity client = dynamoDBMapper.load(ClientEntity.class, pk, id);
+        if (client != null) {
+            dynamoDBMapper.delete(client);
+            return true;
+        }
+        return false;
     }
 
 

@@ -2,11 +2,14 @@ package com.example.client.Client.infrastructure.controller;
 
 import com.example.client.Client.aplication.ClientModel;
 import com.example.client.Client.aplication.port.ClientCreate;
+import com.example.client.Client.aplication.port.ClientDelete;
 import com.example.client.Client.aplication.port.ClientGet;
 import com.example.client.Client.aplication.port.ClientUpdate;
 import com.example.client.Client.domain.mappers.ClientDtoMapper;
 import com.example.client.Client.infrastructure.controller.DTO.ClientInputDto;
 import com.example.client.Client.infrastructure.controller.DTO.ClientOutputDto;
+import com.example.client.Client.infrastructure.controller.DTO.MerchantOutputDto;
+import com.example.client.feign.MerchantFeignClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +29,8 @@ public class ClientController {
     private final ClientUpdate clientUpdate;
     private final ClientGet clientGet;
     private final ClientDtoMapper clientDtoMapper;
+    private final ClientDelete clientDelete;
+    private final MerchantFeignClient merchantFeignClient;
 
     @PostMapping("/create")
     public ResponseEntity<?> createClient(@RequestBody @Valid ClientInputDto clientDto, BindingResult result) {
@@ -88,5 +93,33 @@ public class ClientController {
         ClientOutputDto dto = clientDtoMapper.toOutputDto(updatedModel);
         return ResponseEntity.ok(dto);
     }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteClientById(@RequestParam String id) {
+        boolean deleted = clientDelete.deleteById(id);
+        if (deleted) {
+            return ResponseEntity.ok("Cliente eliminado correctamente.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cliente con ese ID no encontrado.");
+        }
+    }
+
+    @GetMapping("/merchants")
+    public ResponseEntity<?> getMerchantsForClient(@RequestParam String clientId) {
+        try {
+            List<MerchantOutputDto> merchants = merchantFeignClient.getMerchantsByClientId(clientId);
+
+            if (merchants == null || merchants.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("No hay merchants asociados al clientId proporcionado.");
+            }
+
+            return ResponseEntity.ok(merchants);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al obtener merchants del cliente.");
+        }
+    }
+
 
 }
