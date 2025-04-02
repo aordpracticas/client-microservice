@@ -44,7 +44,7 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- Lombok -->
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -52,14 +52,14 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- MapStruct -->
+
 		<dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct</artifactId>
 			<version>${mapstruct.version}</version>
 		</dependency>
 
-		<!-- AWS SDK -->
+
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-dynamodb</artifactId>
@@ -72,20 +72,20 @@
 			<version>${aws.sdk.version}</version>
 		</dependency>
 
-		<!-- Spring Data DynamoDB -->
+
 		<dependency>
 			<groupId>com.github.derjust</groupId>
 			<artifactId>spring-data-dynamodb</artifactId>
 			<version>5.1.0</version>
 		</dependency>
 
-		<!-- Feign para comunicación entre microservicios -->
+
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-openfeign</artifactId>
 		</dependency>
 
-		<!-- Swagger -->
+
 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger2</artifactId>
@@ -97,6 +97,11 @@
 			<artifactId>springfox-swagger-ui</artifactId>
 			<version>${swagger.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt</artifactId>
+			<version>0.9.1</version>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
@@ -107,6 +112,11 @@
 				<version>Hoxton.SR3</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>javax.xml.bind</groupId>
+				<artifactId>jaxb-api</artifactId>
+				<version>2.3.1</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
